@@ -61,7 +61,7 @@ module ClickupTui
       
       def token_exists?
         token = get_token
-        token && !token.empty?
+        !!(token && !token.empty?)
       end
       
       private

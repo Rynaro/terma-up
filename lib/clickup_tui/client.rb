@@ -15,7 +15,7 @@ module ClickupTui
       
       @config = ClickupTui.configuration || Config.new
       @connection = build_connection
-      @rate_limiter = RateLimiter.new(@config.rate_limit_per_minute, RATE_LIMIT_WINDOW)
+      @rate_limiter = RateLimiter.new(@config.rate_limit_per_minute || RATE_LIMIT_PER_MINUTE, RATE_LIMIT_WINDOW)
     end
     
     # Workspace operations
@@ -63,7 +63,10 @@ module ClickupTui
         conn.response :json, content_type: /\bjson$/
         conn.headers['Authorization'] = @token
         conn.headers['Content-Type'] = 'application/json'
-        conn.options.timeout = @config.timeout
+        
+        # Set timeout with fallback
+        timeout_value = @config.respond_to?(:timeout) ? @config.timeout : 30
+        conn.options.timeout = timeout_value if timeout_value
         
         # Add request/response logging in development
         if ENV['CLICKUP_TUI_DEBUG']

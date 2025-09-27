@@ -31,7 +31,11 @@ module ClickupTui
     end
     
     def load_config
-      config = load_config_file.merge(load_env_overrides)
+      file_config = load_config_file
+      env_overrides = load_env_overrides
+      
+      # Deep merge configuration
+      config = deep_merge(file_config, env_overrides)
       
       # API settings
       @api_base_url = config.dig('api', 'base_url')
@@ -52,7 +56,9 @@ module ClickupTui
     
     def load_config_file
       if File.exist?(config_file_path)
-        YAML.load_file(config_file_path) || {}
+        loaded_config = YAML.load_file(config_file_path) || {}
+        # Merge with defaults to ensure all keys are present
+        DEFAULT_CONFIG.merge(loaded_config)
       else
         DEFAULT_CONFIG.dup
       end
@@ -66,24 +72,33 @@ module ClickupTui
     end
     
     def load_env_overrides
-      overrides = {}
+      overrides = { 'api' => {}, 'ui' => {}, 'cache' => {} }
       
       # API overrides
-      overrides['api'] = {}
       overrides['api']['base_url'] = ENV['CLICKUP_API_URL'] if ENV['CLICKUP_API_URL']
       overrides['api']['timeout'] = ENV['CLICKUP_API_TIMEOUT'].to_i if ENV['CLICKUP_API_TIMEOUT']
       
       # UI overrides
-      overrides['ui'] = {}
       overrides['ui']['per_page'] = ENV['CLICKUP_TUI_PER_PAGE'].to_i if ENV['CLICKUP_TUI_PER_PAGE']
       
       # Cache overrides
-      overrides['cache'] = {}
       if ENV['CLICKUP_TUI_CACHE_ENABLED']
         overrides['cache']['enabled'] = ENV['CLICKUP_TUI_CACHE_ENABLED'] == 'true'
       end
       
       overrides
+    end
+    
+    def deep_merge(hash1, hash2)
+      result = hash1.dup
+      hash2.each do |key, value|
+        if result[key].is_a?(Hash) && value.is_a?(Hash)
+          result[key] = deep_merge(result[key], value)
+        else
+          result[key] = value
+        end
+      end
+      result
     end
   end
 end

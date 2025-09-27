@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  clickup-tui:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: clickup-tui:latest
+    container_name: clickup-tui
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+    volumes:
+      # Mount configuration directory for persistent storage
+      - ~/.config/clickup-tui:/home/clickup/.config/clickup-tui
+      - ~/.cache/clickup-tui:/home/clickup/.cache/clickup-tui
+    profiles:
+      - tools
+
+  # Development service with source code mounted
+  clickup-tui-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: builder
+    image: clickup-tui:dev
+    container_name: clickup-tui-dev
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - CLICKUP_TUI_DEBUG=true
+    volumes:
+      - ..:/app
+      - ~/.config/clickup-tui:/home/clickup/.config/clickup-tui
+      - ~/.cache/clickup-tui:/home/clickup/.cache/clickup-tui
+    working_dir: /app
+    command: bundle exec bin/clickup-tui
+    profiles:
+      - dev

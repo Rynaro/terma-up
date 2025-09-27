@@ -206,30 +206,6 @@ module ClickupTui
         end
       end
       
-      private
-      
-      def clear_screen
-        print TTY::Cursor.clear_screen
-        print TTY::Cursor.move_to(0, 0)
-      end
-      
-      def terminal_width
-        TTY::Screen.width
-      rescue
-        80
-      end
-      
-      def terminal_height
-        TTY::Screen.height
-      rescue
-        24
-      end
-      
-      def truncate(text, length)
-        return text if text.length <= length
-        "#{text[0..length-4]}..."
-      end
-      
       # Text formatting helpers
       def bold(text)
         "\e[1m#{text}\e[0m"
@@ -261,6 +237,30 @@ module ClickupTui
       
       def cyan(text)
         "\e[36m#{text}\e[0m"
+      end
+      
+      private
+      
+      def clear_screen
+        print TTY::Cursor.clear_screen
+        print TTY::Cursor.move_to(0, 0)
+      end
+      
+      def terminal_width
+        TTY::Screen.width
+      rescue
+        80
+      end
+      
+      def terminal_height
+        TTY::Screen.height
+      rescue
+        24
+      end
+      
+      def truncate(text, length)
+        return text if text.length <= length
+        "#{text[0..length-4]}..."
       end
     end
   end

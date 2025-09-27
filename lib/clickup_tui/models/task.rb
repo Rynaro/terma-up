@@ -91,7 +91,7 @@ module ClickupTui
       end
       
       def has_due_date?
-        due_date && !due_date.empty?
+        !!(due_date && !due_date.empty?)
       end
       
       def overdue?

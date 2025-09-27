@@ -31,19 +31,23 @@ module ClickupTui
     def setup_authentication(token)
       Auth.store_token(token)
       
-      # Test the token
-      test_client = Client.new(token)
-      user_data = test_client.get_user
-      
-      Display.show_success("Successfully authenticated as #{user_data['username']}")
+      # Test the token only if validation is requested
+      if ENV['CLICKUP_TUI_VALIDATE_TOKEN'] == 'true'
+        test_client = Client.new(token)
+        user_data = test_client.get_user
+        Display.show_success("Successfully authenticated as #{user_data['username']}")
+      else
+        Display.show_success("API token stored successfully")
+        Display.show_info("Run 'clickup-tui start' to begin using the application")
+      end
     rescue Error::AuthenticationError => e
       Display.show_error("Authentication failed: #{e.message}")
       Auth.clear_token
       raise e
     rescue => e
       Display.show_error("Failed to validate token: #{e.message}")
-      Auth.clear_token
-      raise e
+      # Don't clear token on validation failure - it might be network issues
+      Display.show_warning("Token saved but could not be validated. You can try using the application anyway.")
     end
     
     def clear_authentication
@@ -71,8 +75,8 @@ module ClickupTui
       
       # Configuration
       puts "#{Display.blue('ℹ️  Configuration:')}"
-      puts "  API URL: #{@config.api_base_url}"
-      puts "  Rate Limit: #{@config.rate_limit_per_minute}/min"
+      puts "  API URL: #{@config.api_base_url || 'https://api.clickup.com/api/v2'}"
+      puts "  Rate Limit: #{@config.rate_limit_per_minute || 100}/min"
       puts "  Cache: #{@config.cache_enabled ? 'Enabled' : 'Disabled'}"
       
       # Cache status
