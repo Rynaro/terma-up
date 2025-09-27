@@ -3,7 +3,7 @@
 module ClickupTui
   module Error
     class BaseError < StandardError; end
-    
+
     class MissingToken < BaseError; end
     class InvalidTokenFormat < BaseError; end
     class AuthenticationError < BaseError; end

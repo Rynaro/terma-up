@@ -7,7 +7,7 @@ module ClickupTui
                   :tags, :due_date, :start_date, :time_estimate, :time_spent,
                   :custom_fields, :dependencies, :list, :folder, :space, :url,
                   :date_created, :date_updated, :date_closed, :archived, :creator
-      
+
       def initialize(data)
         @id = data['id']
         @name = data['name']
@@ -32,95 +32,95 @@ module ClickupTui
         @archived = data['archived'] || false
         @creator = data['creator']
       end
-      
+
       def to_s
         "#{status_icon} #{name}"
       end
-      
+
       def display_name
         priority_text = priority_label
-        assignee_text = assignees.any? ? " → #{assignees.first['username']}" : ""
+        assignee_text = assignees.any? ? " → #{assignees.first['username']}" : ''
         "#{name}#{priority_text}#{assignee_text}"
       end
-      
+
       def status_icon
-        return "📦" if archived
-        
+        return '📦' if archived
+
         case status&.dig('status')&.downcase
         when 'to do', 'open'
-          "⭕"
+          '⭕'
         when 'in progress', 'in review'
-          "🔄"
+          '🔄'
         when 'done', 'closed', 'complete'
-          "✅"
+          '✅'
         when 'blocked'
-          "🚫"
+          '🚫'
         else
-          "⚪"
+          '⚪'
         end
       end
-      
+
       def priority_icon
         case priority&.dig('priority')
         when '1', 'urgent'
-          "🔴"
+          '🔴'
         when '2', 'high'
-          "🟠"
+          '🟠'
         when '3', 'normal'
-          "🟡"
+          '🟡'
         when '4', 'low'
-          "🟢"
+          '🟢'
         else
-          "⚪"
+          '⚪'
         end
       end
-      
+
       def priority_label
         case priority&.dig('priority')
         when '1', 'urgent'
-          " [URGENT]"
+          ' [URGENT]'
         when '2', 'high'
-          " [HIGH]"
+          ' [HIGH]'
         when '3', 'normal'
-          ""
+          ''
         when '4', 'low'
-          " [LOW]"
+          ' [LOW]'
         else
-          ""
+          ''
         end
       end
-      
+
       def has_due_date?
         !!(due_date && !due_date.empty?)
       end
-      
+
       def overdue?
         return false unless has_due_date?
-        
+
         due_timestamp = due_date.to_i
-        due_timestamp > 0 && Time.now.to_i > due_timestamp
+        due_timestamp.positive? && Time.now.to_i > due_timestamp
       end
-      
+
       def due_date_formatted
         return nil unless has_due_date?
-        
+
         timestamp = due_date.to_i
         return nil if timestamp <= 0
-        
+
         time = Time.at(timestamp / 1000) # ClickUp uses milliseconds
-        time.strftime("%Y-%m-%d %H:%M")
+        time.strftime('%Y-%m-%d %H:%M')
       end
-      
+
       def estimated_time_formatted
         return nil unless time_estimate
-        
+
         estimate = time_estimate.to_i
         return nil if estimate <= 0
-        
-        hours = estimate / 3600000 # Convert from milliseconds to hours
-        minutes = (estimate % 3600000) / 60000
-        
-        if hours > 0
+
+        hours = estimate / 3_600_000 # Convert from milliseconds to hours
+        minutes = (estimate % 3_600_000) / 60_000
+
+        if hours.positive?
           "#{hours}h #{minutes}m"
         else
           "#{minutes}m"

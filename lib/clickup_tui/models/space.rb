@@ -4,7 +4,7 @@ module ClickupTui
   module Models
     class Space
       attr_reader :id, :name, :color, :private, :statuses, :features
-      
+
       def initialize(data)
         @id = data['id']
         @name = data['name']
@@ -13,14 +13,14 @@ module ClickupTui
         @statuses = data['statuses'] || []
         @features = data['features'] || {}
       end
-      
+
       def to_s
-        privacy_icon = private ? "🔒" : "🗂️"
+        privacy_icon = private ? '🔒' : '🗂️'
         "#{privacy_icon} #{name}"
       end
-      
+
       def display_name
-        privacy = private ? "Private" : "Public"
+        privacy = private ? 'Private' : 'Public'
         "#{name} (#{privacy})"
       end
     end

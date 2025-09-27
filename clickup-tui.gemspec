@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{\A(?:test|spec|features)/}) }
   end
-  
+
   spec.bindir        = 'bin'
   spec.executables   = ['clickup-tui']
   spec.require_paths = ['lib']
@@ -30,19 +30,19 @@ Gem::Specification.new do |spec|
   # Core dependencies
   spec.add_dependency 'faraday', '~> 2.0'
   spec.add_dependency 'thor', '~> 1.0'
-  spec.add_dependency 'tty-prompt', '~> 0.23'
-  spec.add_dependency 'tty-table', '~> 0.11'
+  spec.add_dependency 'tty-cursor', '~> 0.7'
   spec.add_dependency 'tty-markdown', '~> 0.7'
   spec.add_dependency 'tty-progressbar', '~> 0.18'
-  spec.add_dependency 'tty-spinner', '~> 0.9'
-  spec.add_dependency 'tty-cursor', '~> 0.7'
+  spec.add_dependency 'tty-prompt', '~> 0.23'
   spec.add_dependency 'tty-screen', '~> 0.8'
+  spec.add_dependency 'tty-spinner', '~> 0.9'
+  spec.add_dependency 'tty-table', '~> 0.11'
 
   # Development dependencies
+  spec.add_development_dependency 'pry', '~> 0.14'
   spec.add_development_dependency 'rspec', '~> 3.12'
+  spec.add_development_dependency 'rubocop', '~> 1.50'
   spec.add_development_dependency 'vcr', '~> 6.0'
   spec.add_development_dependency 'webmock', '~> 3.18'
-  spec.add_development_dependency 'rubocop', '~> 1.50'
   spec.add_development_dependency 'yard', '~> 0.9'
-  spec.add_development_dependency 'pry', '~> 0.14'
 end

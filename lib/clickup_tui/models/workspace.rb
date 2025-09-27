@@ -4,7 +4,7 @@ module ClickupTui
   module Models
     class Workspace
       attr_reader :id, :name, :color, :avatar, :members
-      
+
       def initialize(data)
         @id = data['id']
         @name = data['name']
@@ -12,11 +12,11 @@ module ClickupTui
         @avatar = data['avatar']
         @members = data['members'] || []
       end
-      
+
       def to_s
         "🏢 #{name}"
       end
-      
+
       def display_name
         "#{name} (#{members.size} members)"
       end
