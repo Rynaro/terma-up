@@ -20,28 +20,110 @@ module ClickupTui
 
     def start
       Display.show_welcome
-      validate_authentication
+      
+      # Check authentication with recovery options
+      unless authenticate_with_recovery
+        Display.show_goodbye
+        exit(0)
+      end
+      
       main_navigation_loop
     rescue Interrupt
       Display.show_goodbye
       exit(0)
-    rescue Error::AuthenticationError => e
-      Display.show_error("Authentication failed: #{e.message}")
-      Display.show_info("Please run 'clickup-tui auth' to set up your API token")
-      exit(1)
     end
 
     private
+
+    def authenticate_with_recovery
+      loop do
+        begin
+          validate_authentication
+          return true # Authentication successful
+        rescue Error::AuthenticationError => e
+          Display.show_error("Authentication failed: #{e.message}")
+          
+          # Offer recovery options
+          choice = @prompt.select('What would you like to do?', [
+            { name: '🔑 Enter new API token', value: :new_token },
+            { name: '🔄 Retry with current token', value: :retry },
+            { name: '📋 Show current token status', value: :status },
+            { name: '🚪 Exit', value: :exit }
+          ])
+          
+          case choice
+          when :new_token
+            return false unless prompt_for_new_token
+            # Continue loop to retry authentication
+          when :retry
+            # Continue loop to retry authentication
+            next
+          when :status
+            show_token_status
+            # Continue loop
+          when :exit
+            return false
+          end
+        rescue StandardError => e
+          Display.show_warning("Could not validate authentication: #{e.message}")
+          
+          # For non-auth errors, offer simpler options
+          choice = @prompt.select('What would you like to do?', [
+            { name: '🔄 Retry connection', value: :retry },
+            { name: '⚠️  Continue anyway (may not work properly)', value: :continue },
+            { name: '🚪 Exit', value: :exit }
+          ])
+          
+          case choice
+          when :retry
+            next
+          when :continue
+            Display.show_info('Continuing with potentially invalid authentication...')
+            return true
+          when :exit
+            return false
+          end
+        end
+      end
+    end
+
+    def prompt_for_new_token
+      begin
+        new_token = @prompt.mask('Enter your ClickUp API token (starts with pk_):', required: true) do |q|
+          q.validate(/\Apk_/, 'Token must start with pk_')
+        end
+        
+        # Store the new token
+        Auth.store_token(new_token)
+        
+        # Update client with new token
+        @client = Client.new(new_token)
+        
+        Display.show_success('New API token saved successfully')
+        return true
+      rescue Interrupt
+        Display.show_info('Token update cancelled')
+        return false
+      rescue StandardError => e
+        Display.show_error("Failed to update token: #{e.message}")
+        return false
+      end
+    end
+
+    def show_token_status
+      if Auth.token_exists?
+        token = Auth.get_token
+        masked_token = token ? "#{token[0..8]}...#{token[-4..-1]}" : 'Invalid token'
+        Display.show_info("Current token: #{masked_token}")
+      else
+        Display.show_error('No API token found')
+      end
+    end
 
     def validate_authentication
       Display.show_loading('Validating authentication...') do
         @client.get_user
       end
-    rescue Error::AuthenticationError => e
-      raise e
-    rescue StandardError => e
-      Display.show_warning("Could not validate authentication: #{e.message}")
-      Display.show_info('Continuing anyway...')
     end
 
     def main_navigation_loop

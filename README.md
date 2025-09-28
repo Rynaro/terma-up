@@ -40,25 +40,50 @@ bundle install
 ### Docker
 
 ```bash
-# Run directly
+# Quick start - Run directly (you'll need to set up auth interactively)
 docker run -it --rm clickup-tui:latest
 
-# With persistent configuration
+# With persistent configuration (recommended for regular use)
 docker run -it --rm \
   -v ~/.config/clickup-tui:/home/clickup/.config/clickup-tui \
   -v ~/.cache/clickup-tui:/home/clickup/.cache/clickup-tui \
   clickup-tui:latest
+
+# Set up authentication first (one time setup)
+docker run -it --rm \
+  -v ~/.config/clickup-tui:/home/clickup/.config/clickup-tui \
+  clickup-tui:latest auth
+
+# Then run with persistent config
+docker run -it --rm \
+  -v ~/.config/clickup-tui:/home/clickup/.config/clickup-tui \
+  -v ~/.cache/clickup-tui:/home/clickup/.cache/clickup-tui \
+  clickup-tui:latest start
 ```
 
 ### Docker Compose
 
+The repository includes Docker Compose configurations for both production use and development:
+
 ```bash
-# Production
+# First, clone the repository
+git clone https://github.com/Rynaro/terma-up.git
+cd terma-up
+
+# Production usage - Run the built application
 docker-compose --profile tools up clickup-tui
 
-# Development
+# Interactive authentication setup
+docker-compose --profile tools run --rm clickup-tui auth
+
+# Development environment - Mount source code for development
 docker-compose --profile dev up clickup-tui-dev
 ```
+
+**Docker Compose Benefits:**
+- Automatic volume management for config and cache
+- Easy environment variable configuration
+- Development environment with live code reloading
 
 ## 🚀 Quick Start
 
@@ -139,11 +164,64 @@ Configuration files are stored in:
 ### Local Development
 
 ```bash
-# Start development environment
+# Start development environment with live code reloading
 docker-compose --profile dev up clickup-tui-dev
 
-# Build local image
+# Build local image for testing
 docker build -f docker/Dockerfile -t clickup-tui:local .
+
+# Run your local build
+docker run -it --rm clickup-tui:local
+```
+
+### Docker Usage Examples
+
+#### First-Time Setup with Docker
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Rynaro/terma-up.git
+cd terma-up
+
+# 2. Set up authentication (one-time)
+docker-compose --profile tools run --rm clickup-tui auth
+
+# 3. Run the application
+docker-compose --profile tools up clickup-tui
+```
+
+#### Using Pre-Built Images
+
+```bash
+# Run with Docker Hub image (when available)
+docker run -it --rm \
+  -v ~/.config/clickup-tui:/home/clickup/.config/clickup-tui \
+  -v ~/.cache/clickup-tui:/home/clickup/.cache/clickup-tui \
+  clickup-tui:latest
+```
+
+#### Custom Configuration with Environment Variables
+
+```bash
+# Use custom ClickUp API URL
+docker run -it --rm \
+  -e CLICKUP_API_URL="https://custom.clickup.com/api/v2" \
+  -e CLICKUP_TUI_DEBUG=true \
+  -v ~/.config/clickup-tui:/home/clickup/.config/clickup-tui \
+  clickup-tui:latest
+```
+
+#### Development Workflow
+
+```bash
+# Start development container with your changes
+docker-compose --profile dev up clickup-tui-dev
+
+# Run tests inside container
+docker-compose --profile dev run --rm clickup-tui-dev bundle exec rspec
+
+# Access shell in development container
+docker-compose --profile dev run --rm clickup-tui-dev /bin/sh
 ```
 
 ## 🧪 Development

@@ -5,7 +5,7 @@ require 'json'
 
 module ClickupTui
   class Client
-    BASE_URL = 'https://api.clickup.com/api/v2'
+    DEFAULT_BASE_URL = 'https://api.clickup.com/api/v2'
     RATE_LIMIT_PER_MINUTE = 100
     RATE_LIMIT_WINDOW = 60
 
@@ -14,6 +14,7 @@ module ClickupTui
       raise Error::MissingToken, "No API token found. Run 'clickup-tui auth' to set up authentication." unless @token
 
       @config = ClickupTui.configuration || Config.new
+      ClickupTui.configuration = @config unless ClickupTui.configuration
       @connection = build_connection
       @rate_limiter = RateLimiter.new(@config.rate_limit_per_minute || RATE_LIMIT_PER_MINUTE, RATE_LIMIT_WINDOW)
     end
@@ -58,7 +59,9 @@ module ClickupTui
     private
 
     def build_connection
-      Faraday.new(@config.api_base_url) do |conn|
+      base_url = @config.api_base_url || DEFAULT_BASE_URL
+      
+      Faraday.new(base_url) do |conn|
         conn.request :json
         conn.response :json, content_type: /\bjson$/
         conn.headers['Authorization'] = @token

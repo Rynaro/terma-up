@@ -18,10 +18,6 @@ module ClickupTui
       Display.show_error('No API token found')
       Display.show_info("Please run 'clickup-tui auth' to set up authentication")
       exit(1)
-    rescue Error::AuthenticationError => e
-      Display.show_error("Authentication failed: #{e.message}")
-      Display.show_info("Please check your API token with 'clickup-tui auth'")
-      exit(1)
     rescue StandardError => e
       Display.show_error("Application error: #{e.message}")
       puts e.backtrace.join("\n") if ENV['CLICKUP_TUI_DEBUG']
