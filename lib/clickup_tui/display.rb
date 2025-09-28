@@ -132,34 +132,46 @@ module ClickupTui
       def show_tasks_table(tasks_data, title = 'Tasks')
         return show_info('No tasks found') if tasks_data.empty?
 
-        tasks = tasks_data.map do |task_data|
-          task_data.is_a?(Models::Task) ? task_data : Models::Task.new(task_data)
-        end
+        begin
+          tasks = tasks_data.map do |task_data|
+            task_data.is_a?(Models::Task) ? task_data : Models::Task.new(task_data)
+          end
 
-        puts
-        puts "#{bold(title)} (#{tasks.size})"
-        puts
+          puts
+          puts "#{bold(title)} (#{tasks.size})"
+          puts
 
-        table = TTY::Table.new do |t|
-          t.header = ['Status', 'Priority', 'Name', 'Assignee', 'Due Date']
+          # Create table with header as first parameter
+          header = ['Status', 'Priority', 'Name', 'Assignee', 'Due Date']
+          rows = []
 
           tasks.each do |task|
             assignee = task.assignees.first&.dig('username') || '-'
             due_date = task.due_date_formatted || '-'
             due_date = red("#{due_date} (!)") if task.overdue?
 
-            t << [
+            rows << [
               task.status_icon,
               task.priority_icon,
-              truncate(task.name, 40),
+              truncate(task.name || 'Untitled', 40),
               truncate(assignee, 15),
               due_date
             ]
           end
-        end
 
-        puts table.render(:unicode, padding: [0, 1], width: terminal_width - 4)
-        puts
+          table = TTY::Table.new(header, rows)
+
+          puts table.render(:unicode, padding: [0, 1], width: terminal_width - 4)
+          puts
+        rescue StandardError => e
+          show_error("Failed to display tasks table: #{e.message}")
+          # Fallback to simple list display
+          tasks_data.each_with_index do |task_data, index|
+            task = task_data.is_a?(Models::Task) ? task_data : Models::Task.new(task_data)
+            puts "#{index + 1}. #{task.name || 'Untitled Task'}"
+          end
+          puts
+        end
       end
 
       def show_breadcrumb(navigation_stack, current_context)

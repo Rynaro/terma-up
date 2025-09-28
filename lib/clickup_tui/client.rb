@@ -21,22 +21,22 @@ module ClickupTui
 
     # Workspace operations
     def get_workspaces
-      rate_limited_request { get('/team') }
+      rate_limited_request { get('team') }
     end
 
     def get_spaces(workspace_id)
-      rate_limited_request { get("/team/#{workspace_id}/space") }
+      rate_limited_request { get("team/#{workspace_id}/space") }
     end
 
     def get_folders(space_id)
-      rate_limited_request { get("/space/#{space_id}/folder") }
+      rate_limited_request { get("space/#{space_id}/folder") }
     end
 
     def get_lists(folder_id = nil, space_id = nil)
       if folder_id
-        rate_limited_request { get("/folder/#{folder_id}/list") }
+        rate_limited_request { get("folder/#{folder_id}/list") }
       elsif space_id
-        rate_limited_request { get("/space/#{space_id}/list") }
+        rate_limited_request { get("space/#{space_id}/list") }
       else
         raise ArgumentError, 'Either folder_id or space_id must be provided'
       end
@@ -44,23 +44,23 @@ module ClickupTui
 
     def get_tasks(list_id, options = {})
       params = build_task_params(options)
-      rate_limited_request { get("/list/#{list_id}/task", params) }
+      rate_limited_request { get("list/#{list_id}/task", params) }
     end
 
     def get_task(task_id)
-      rate_limited_request { get("/task/#{task_id}") }
+      rate_limited_request { get("task/#{task_id}") }
     end
 
     # User info for validation
     def get_user
-      rate_limited_request { get('/user') }
+      rate_limited_request { get('user') }
     end
 
     private
 
     def build_connection
       base_url = @config.api_base_url || DEFAULT_BASE_URL
-      
+
       Faraday.new(base_url) do |conn|
         conn.request :json
         conn.response :json, content_type: /\bjson$/
